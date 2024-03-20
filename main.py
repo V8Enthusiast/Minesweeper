@@ -56,7 +56,7 @@ for r in range(ROWS):
             bombs_left -= 1
 
 def explode(Mouse_x, Mouse_y):
-    mixer.music.play()
+    explosion.play()
     for _ in range(2024):
         color = choice(((227, 23, 10), (225, 96, 54), (234, 196, 53), (42, 45, 52)))
         direction = pygame.math.Vector2(uniform(-1, 1), uniform(-1, 1))
@@ -68,6 +68,21 @@ def explode(Mouse_x, Mouse_y):
         direction = pygame.math.Vector2(uniform(-1, 1), uniform(-1, 1))
         direction = direction.normalize()
         speed = randint(400, 700)
+        Particle(particle_group, (Mouse_x, Mouse_y), color, direction, speed)
+
+def confetti(Mouse_x, Mouse_y):
+    mixer.music.play()
+    for _ in range(2024):
+        color = choice(((48, 188, 237), (123, 201, 80), (255, 184, 0), (244, 91, 105)))
+        direction = pygame.math.Vector2(uniform(-1, 1), uniform(-1, 1))
+        direction = direction.normalize()
+        speed = randint(60, 300)
+        Particle(particle_group, (Mouse_x, Mouse_y), color, direction, speed)
+    for _ in range(2024):
+        color = choice(((48, 188, 237), (123, 201, 80), (255, 184, 0), (244, 91, 105)))
+        direction = pygame.math.Vector2(uniform(-1, 1), uniform(-1, 1))
+        direction = direction.normalize()
+        speed = randint(400, 600)
         Particle(particle_group, (Mouse_x, Mouse_y), color, direction, speed)
 
 class Tile:
@@ -123,10 +138,10 @@ MAIN_HEIGHT = HEIGHT + 100
 
 pygame.font.init()
 mixer.init()
-mixer.music.load('sounds/explosion.mp3')
-mixer.music.set_volume(0.6)
+explosion = pygame.mixer.Sound('sounds/explosion.mp3') # argument must be int
+pygame.mixer.music.load('sounds/sound.mp3')
 
-font = pygame.font.Font('font.ttf', TILE_SIZE//2)
+font = pygame.font.Font('fonts/font.ttf', TILE_SIZE//2)
 pygame.display.set_caption("Minesweeper")
 
 screen = pygame.display.set_mode((WIDTH, MAIN_HEIGHT))
@@ -339,8 +354,10 @@ while running:
                     break
                 if board[r][c] == -1 and gameboard[r][c] == -3:
                    correct += 1
-        if correct == BOMBS:
+        if correct == BOMBS and solved is False:
+            Mouse_x, Mouse_y = pygame.mouse.get_pos()
             solved = True
+            confetti(Mouse_x, Mouse_y)
             main_text_message = "Congrats! You beat the game!"
             update_timer = False
 
