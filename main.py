@@ -1,6 +1,7 @@
 import configparser
 import random
 import pygame
+from pygame import mixer
 import time
 import configparser
 
@@ -107,6 +108,9 @@ HEIGHT = (ROWS) * TILE_SIZE
 MAIN_HEIGHT = HEIGHT + 100
 
 pygame.font.init()
+mixer.init()
+mixer.music.load('sounds/explosion.mp3')
+mixer.music.set_volume(0.6)
 
 font = pygame.font.Font('font.ttf', TILE_SIZE//2)
 pygame.display.set_caption("Minesweeper")
@@ -266,6 +270,7 @@ while running:
                         #running = False
                         failed = True
                         render_fail_text = True
+                        mixer.music.play()
                         main_text_message = "Your computer has exploded!"
                         update_timer = False
                     if gameboard[clicked_column][clicked_row] == 0:
