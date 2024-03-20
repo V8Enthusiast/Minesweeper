@@ -110,7 +110,20 @@ pygame.font.init()
 
 font = pygame.font.Font('font.ttf', TILE_SIZE//2)
 pygame.display.set_caption("Minesweeper")
+
 screen = pygame.display.set_mode((WIDTH, MAIN_HEIGHT))
+
+small_tile_size = int(.75*TILE_SIZE)
+
+bomb_img = pygame.image.load("img/bomb.png").convert_alpha()
+bomb_img = pygame.transform.scale(bomb_img, (TILE_SIZE, TILE_SIZE))
+
+flag_img = pygame.image.load("img/flag.png").convert_alpha()
+flag_img = pygame.transform.scale(flag_img, (small_tile_size, small_tile_size))
+
+img = pygame.image.load("img/gameover.jpg").convert()
+
+pygame.display.set_icon(bomb_img)
 
 running = True
 
@@ -246,10 +259,11 @@ while running:
                     clicked_column = int(Mouse_x) // TILE_SIZE
                     if clicked_column >= COLUMNS or clicked_row >= ROWS:
                         break
+                    if gameboard[clicked_column][clicked_row] == -3:
+                        break
                     gameboard[clicked_column][clicked_row] = hidden_board[clicked_column][clicked_row]
                     if gameboard[clicked_column][clicked_row] == -1:
                         #running = False
-                        img = pygame.image.load("gameover.jpg").convert()
                         failed = True
                         render_fail_text = True
                         main_text_message = "Your computer has exploded!"
@@ -295,21 +309,21 @@ while running:
         for c in range(COLUMNS):
             pygame.draw.rect(screen, BORDER_COLOR, pygame.Rect(r * TILE_SIZE, c * TILE_SIZE, TILE_SIZE, TILE_SIZE))
             if gameboard[r][c] == -3:
-                pygame.draw.rect(screen, flagged_tile_color, pygame.Rect(r * TILE_SIZE + BORDER, c * TILE_SIZE + BORDER, TILE_SIZE - BORDER,TILE_SIZE - BORDER))
-                text = font.render('!', True, (0, 0, 0), None)
-                textRect = text.get_rect()
-                textRect.center = (
-                    r * TILE_SIZE + BORDER + (TILE_SIZE - BORDER) // 2,
-                    c * TILE_SIZE + BORDER + (TILE_SIZE - BORDER) // 2)
-                screen.blit(text, textRect)
+                tile_rect = pygame.Rect(r * TILE_SIZE + BORDER, c * TILE_SIZE + BORDER, TILE_SIZE - BORDER,TILE_SIZE - BORDER)
+                flag_rect = pygame.Rect(r * TILE_SIZE + BORDER + (TILE_SIZE - small_tile_size)/2, c * TILE_SIZE + BORDER + (TILE_SIZE - small_tile_size)/2, TILE_SIZE - BORDER,TILE_SIZE - BORDER)
+                pygame.draw.rect(screen, flagged_tile_color, tile_rect)
+                # text = font.render('!', True, (0, 0, 0), None)
+                # textRect = text.get_rect()
+                # textRect.center = (
+                #     r * TILE_SIZE + BORDER + (TILE_SIZE - BORDER) // 2,
+                #     c * TILE_SIZE + BORDER + (TILE_SIZE - BORDER) // 2)
+                screen.blit(flag_img, flag_rect)
             if gameboard[r][c] == -2:
                 pygame.draw.rect(screen, covered_tile_color, pygame.Rect(r * TILE_SIZE + BORDER, c * TILE_SIZE + BORDER, TILE_SIZE - BORDER,TILE_SIZE - BORDER))
             if gameboard[r][c] == -1:
-                pygame.draw.rect(screen, bomb_tile_color, pygame.Rect(r * TILE_SIZE + BORDER, c * TILE_SIZE + BORDER, TILE_SIZE - BORDER,TILE_SIZE - BORDER))
-                text = font.render('X', True, (0 ,0, 0), None)
-                textRect = text.get_rect()
-                textRect.center = (r * TILE_SIZE + BORDER + (TILE_SIZE - BORDER)//2, c * TILE_SIZE + BORDER + (TILE_SIZE - BORDER)//2)
-                screen.blit(text, textRect)
+                tile_rect = pygame.Rect(r * TILE_SIZE + BORDER, c * TILE_SIZE + BORDER, TILE_SIZE - BORDER,TILE_SIZE - BORDER)
+                pygame.draw.rect(screen, bomb_tile_color, tile_rect)
+                screen.blit(bomb_img, tile_rect)
             if gameboard[r][c] == 0:
                 pygame.draw.rect(screen, empty_tile_color,pygame.Rect(r * TILE_SIZE + BORDER, c * TILE_SIZE + BORDER, TILE_SIZE - BORDER,TILE_SIZE - BORDER))
             if gameboard[r][c] == 1:
