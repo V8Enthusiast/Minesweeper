@@ -1,5 +1,6 @@
-import configparser
 import random
+from random import choice, randint, uniform
+from particles import Particle
 import pygame
 from pygame import mixer
 import time
@@ -54,6 +55,20 @@ for r in range(ROWS):
             board[randomycoord][randomxcoord] = -1
             bombs_left -= 1
 
+def explode(Mouse_x, Mouse_y):
+    mixer.music.play()
+    for _ in range(2024):
+        color = choice(((227, 23, 10), (225, 96, 54), (234, 196, 53), (42, 45, 52)))
+        direction = pygame.math.Vector2(uniform(-1, 1), uniform(-1, 1))
+        direction = direction.normalize()
+        speed = randint(60, 400)
+        Particle(particle_group, (Mouse_x, Mouse_y), color, direction, speed)
+    for _ in range(2024):
+        color = choice(((227, 23, 10), (225, 96, 54), (234, 196, 53), (42, 45, 52)))
+        direction = pygame.math.Vector2(uniform(-1, 1), uniform(-1, 1))
+        direction = direction.normalize()
+        speed = randint(400, 700)
+        Particle(particle_group, (Mouse_x, Mouse_y), color, direction, speed)
 
 class Tile:
     def __init__(self,x ,y, value):
@@ -88,7 +103,6 @@ class Tile:
         self.value = neighbouring_mines
         return neighbouring_mines
 
-
 gameboard = board
 
 x = 0
@@ -116,6 +130,10 @@ font = pygame.font.Font('font.ttf', TILE_SIZE//2)
 pygame.display.set_caption("Minesweeper")
 
 screen = pygame.display.set_mode((WIDTH, MAIN_HEIGHT))
+
+clock = pygame.time.Clock()
+
+particle_group = pygame.sprite.Group()
 
 small_tile_size = int(.75*TILE_SIZE)
 
@@ -201,6 +219,8 @@ main_text_message = "Minesweeper"
 start_time = time.time()
 update_timer = True
 display_time = "00 : 00"
+animation = False
+animation_start_time = None
 
 while running:
     screen.fill((30, 30, 30))
@@ -249,6 +269,7 @@ while running:
                 bombs_left_to_find = BOMBS
                 placed_flags = 0
                 update_timer = True
+                render_fail_text = False
                 display_time = "00 : 00"
                 start_time = time.time()
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -257,6 +278,17 @@ while running:
                     if render_fail_text:
                         render_fail_text = False
                         main_text_message = "Press any key to restart"
+                    else:
+                        Mouse_x, Mouse_y = pygame.mouse.get_pos()
+                        clicked_row = int(Mouse_y) // TILE_SIZE
+                        clicked_column = int(Mouse_x) // TILE_SIZE
+                        if clicked_column >= COLUMNS or clicked_row >= ROWS:
+                            break
+                        if gameboard[clicked_column][clicked_row] == -3:
+                            break
+                        if hidden_board[clicked_column][clicked_row] == -1:
+                            gameboard[clicked_column][clicked_row] = hidden_board[clicked_column][clicked_row]
+                            explode(Mouse_x, Mouse_y)
                 else:
                     Mouse_x, Mouse_y = pygame.mouse.get_pos()
                     clicked_row = int(Mouse_y) // TILE_SIZE
@@ -269,10 +301,12 @@ while running:
                     if gameboard[clicked_column][clicked_row] == -1:
                         #running = False
                         failed = True
-                        render_fail_text = True
-                        mixer.music.play()
                         main_text_message = "Your computer has exploded!"
                         update_timer = False
+                        explode(Mouse_x, Mouse_y)
+                        animation = True
+                        animation_start_time = time.time()
+
                     if gameboard[clicked_column][clicked_row] == 0:
                         empty_list = draw_empty_tiles((clicked_column, clicked_row))
                         while empty_list != []:
@@ -404,8 +438,20 @@ while running:
         MAIN_HEIGHT - 50)
     screen.blit(flag_text, flag_textRect)
 
+    delta_time = clock.tick() / 1000
+
+    particle_group.draw(screen)
+
+    particle_group.update(delta_time)
+
+    if animation:
+        now = time.time()
+        if now - animation_start_time > 2 and failed:
+            render_fail_text = True
+            animation = False
+            animation_start_time = None
+
     if failed and render_fail_text:
         screen.blit(img, (WIDTH//2 - 320, HEIGHT//2 - 180))
-
 
     pygame.display.update()
