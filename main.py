@@ -41,6 +41,8 @@ empty_tile_color = theme_colors['empty_tile_color']
 bomb_tile_color = theme_colors['bomb_tile_color']
 flagged_tile_color = theme_colors['flagged_tile_color']
 BORDER_COLOR = theme_colors['border_color']
+font_color = theme_colors['font_color']
+ui_color = theme_colors['ui_color']
 
 board = [[0 for _ in range(COLUMNS)] for _ in range(ROWS)]
 bombs_left = BOMBS
@@ -238,7 +240,7 @@ animation = False
 animation_start_time = None
 
 while running:
-    screen.fill((30, 30, 30))
+    screen.fill(ui_color)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -303,6 +305,7 @@ while running:
                             break
                         if hidden_board[clicked_column][clicked_row] == -1:
                             gameboard[clicked_column][clicked_row] = hidden_board[clicked_column][clicked_row]
+                            hidden_board[clicked_column][clicked_row] = -5
                             explode(Mouse_x, Mouse_y)
                 else:
                     Mouse_x, Mouse_y = pygame.mouse.get_pos()
@@ -314,6 +317,7 @@ while running:
                         break
                     gameboard[clicked_column][clicked_row] = hidden_board[clicked_column][clicked_row]
                     if gameboard[clicked_column][clicked_row] == -1:
+                        hidden_board[clicked_column][clicked_row] = -5
                         #running = False
                         failed = True
                         main_text_message = "Your computer has exploded!"
@@ -343,7 +347,7 @@ while running:
                     if gameboard[clicked_column][clicked_row] == -3:
                         gameboard[clicked_column][clicked_row] = -2
                         placed_flags -= 1
-                    elif gameboard[clicked_column][clicked_row] == -2 and placed_flags < BOMBS:
+                    elif gameboard[clicked_column][clicked_row] == -2: #  and placed_flags < BOMBS # bug when revealing map segment on which a flag is already standing
                         gameboard[clicked_column][clicked_row] = -3
                         placed_flags += 1
     if placed_flags == BOMBS:
@@ -434,21 +438,21 @@ while running:
         seconds = int(timer_time % 60)
         display_time = f'{minutes:02d} : {seconds:02d}'
 
-    main_text = font.render(main_text_message, True, main_tile_color, None)
+    main_text = font.render(main_text_message, True, font_color, None)
     main_textRect = main_text.get_rect()
     main_textRect.center = (
         WIDTH // 2,
         MAIN_HEIGHT -50)
     screen.blit(main_text, main_textRect)
 
-    timer_text = font.render(display_time, True, main_tile_color, None)
+    timer_text = font.render(display_time, True, font_color, None)
     timer_textRect = timer_text.get_rect()
     timer_textRect.center = (
         WIDTH // 2 - 200,
         MAIN_HEIGHT - 50)
     screen.blit(timer_text, timer_textRect)
 
-    flag_text = font.render(f'Flags: {placed_flags}/{BOMBS}', True, main_tile_color, None)
+    flag_text = font.render(f'Flags: {placed_flags}/{BOMBS}', True, font_color, None)
     flag_textRect = flag_text.get_rect()
     flag_textRect.center = (
         WIDTH // 2 + 200,
